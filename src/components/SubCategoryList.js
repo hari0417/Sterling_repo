@@ -1,9 +1,23 @@
 import React from "react";
 
-export default function SubCategoryList({ subcategory, onSelectItem, onEditItem, onDeleteItem }) {
+export default function SubCategoryList({ subcategory, onSelectItem, onEditItem, onDeleteItem, onAddItem }) {
   return (
     <div>
       <h3>{subcategory.main} / {subcategory.sub}</h3>
+      <button 
+        onClick={onAddItem}
+        style={{
+          marginBottom: "15px",
+          padding: "8px 14px",
+          background: "#3b82f6",
+          color: "#fff",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        + Add New Item
+      </button>
       <ul>
         {subcategory.items.map((item) => (
           <li

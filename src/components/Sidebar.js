@@ -38,16 +38,7 @@ export default function Sidebar({ onSelectSubcategory }) {
               <div
                 className="sub-category"
                 key={j}
-                onClick={() =>
-                  onSelectSubcategory(
-                    main,
-                    sub,
-                    data[main][sub].map((item, idx) => ({
-                      id: `${sub}-${idx}`,
-                      name: item,
-                    }))
-                  )
-                }
+                onClick={() => onSelectSubcategory(main, sub)}
                 style={{ paddingLeft: "15px", cursor: "pointer", margin: "4px 0" }}
               >
                 {sub}
