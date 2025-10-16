@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./LoginPage.css";
+import logo from "./image/IMG_20251016_173926.jpg";
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -16,18 +17,15 @@ export default function LoginPage({ onLogin }) {
 
   const handleLogin = (e) => {
     e.preventDefault();
-
-    // Validation
     let hasError = false;
     const newError = { username: false, password: false };
-    if (username === "") { newError.username = true; hasError = true; }
-    if (password === "") { newError.password = true; hasError = true; }
+    if (!username) { newError.username = true; hasError = true; }
+    if (!password) { newError.password = true; hasError = true; }
     setError(newError);
     if (hasError) { setMessage("⚠️ Please fill all fields"); return; }
 
     setLoading(true);
     setMessage("");
-
     setTimeout(() => {
       setLoading(false);
       if (username === "admin" && password === "react@123") {
@@ -61,48 +59,45 @@ export default function LoginPage({ onLogin }) {
         </button>
       </div>
 
-      <div className="login-box">
+      <div className="login-card">
+        <img src={logo} alt="Sterling Reprographics" className="company-logo" />
+
         <h2>Login</h2>
         {message && <p className="message">{message}</p>}
 
         <form onSubmit={handleLogin}>
           <div className="input-group">
-            <label>Username</label>
             <input
               type="text"
               className={error.username ? "error" : ""}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              placeholder="Username"
             />
           </div>
 
-          <div className="input-group">
-            <label>Password</label>
-            <div className="password-wrapper">
-              <input
-                type={showPassword ? "text" : "password"}
-                className={error.password ? "error" : ""}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-              />
-              <span
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? "🙈" : "👁️"}
-              </span>
-            </div>
+          <div className="input-group password-group">
+            <input
+              type={showPassword ? "text" : "password"}
+              className={error.password ? "error" : ""}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+            />
+            <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? "🙈" : "👁️"}
+            </span>
           </div>
 
           <div className="remember-me">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={() => setRememberMe(!rememberMe)}
-            />
-            <label>Remember Me</label>
+            <label>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
+              />
+              Remember Me
+            </label>
           </div>
 
           <button type="submit" className="btn-login" disabled={loading}>
@@ -116,7 +111,7 @@ export default function LoginPage({ onLogin }) {
         </div>
       </div>
 
-      {/* Forgot Password Popup */}
+      {/* Forgot Password Modal */}
       {showForgot && (
         <div className="popup">
           <div className="popup-box">
@@ -135,7 +130,7 @@ export default function LoginPage({ onLogin }) {
         </div>
       )}
 
-      {/* Change Password Popup */}
+      {/* Change Password Modal */}
       {showChange && (
         <div className="popup">
           <div className="popup-box">

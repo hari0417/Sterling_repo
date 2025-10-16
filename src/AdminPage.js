@@ -9,17 +9,36 @@ export default function AdminPage({ username, onLogout }) {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // When a subcategory is clicked in sidebar
   const handleSelectSubcategory = (main, sub, items) => {
     setSelectedSubcategory({ main, sub, items });
-    setSelectedItem(null); // reset selected item
+    setSelectedItem(null);
   };
 
+  // When an item is clicked in subcategory list
   const handleSelectItem = (item) => {
     setSelectedItem(item);
   };
 
+  // Back button in item detail
   const handleBackToSubcategory = () => {
     setSelectedItem(null);
+  };
+
+  // Edit item
+  const handleEditItem = (item) => {
+    setSelectedItem(item);
+  };
+
+  // Delete item
+  const handleDeleteItem = (itemId) => {
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      const updatedItems = selectedSubcategory.items.filter(
+        (item) => item.id !== itemId
+      );
+      setSelectedSubcategory({ ...selectedSubcategory, items: updatedItems });
+      setSelectedItem(null);
+    }
   };
 
   return (
@@ -28,20 +47,19 @@ export default function AdminPage({ username, onLogout }) {
       <Sidebar onSelectSubcategory={handleSelectSubcategory} />
 
       <main className="main-content">
-        {/* Welcome message */}
         {!selectedSubcategory && !selectedItem && (
           <h2>Welcome to Admin Dashboard</h2>
         )}
 
-        {/* SubCategory List */}
         {selectedSubcategory && !selectedItem && (
           <SubCategoryList
             subcategory={selectedSubcategory}
             onSelectItem={handleSelectItem}
+            onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
           />
         )}
 
-        {/* Item Detail */}
         {selectedItem && (
           <div>
             <button
@@ -58,7 +76,17 @@ export default function AdminPage({ username, onLogout }) {
             >
               ← Back
             </button>
-            <ItemDetail item={selectedItem} />
+            <ItemDetail
+              item={selectedItem}
+              onSave={(updatedItem) => {
+                // Update item in list
+                const updatedItems = selectedSubcategory.items.map((it) =>
+                  it.id === updatedItem.id ? updatedItem : it
+                );
+                setSelectedSubcategory({ ...selectedSubcategory, items: updatedItems });
+                setSelectedItem(updatedItem);
+              }}
+            />
           </div>
         )}
       </main>

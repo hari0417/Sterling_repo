@@ -28,15 +28,27 @@ export default function Sidebar({ onSelectSubcategory }) {
           <div
             className="main-category"
             onClick={() => setOpenMain(openMain === main ? null : main)}
+            style={{ cursor: "pointer", fontWeight: "bold", margin: "8px 0" }}
           >
             {main}
           </div>
+
           {openMain === main &&
             Object.keys(data[main]).map((sub, j) => (
               <div
                 className="sub-category"
                 key={j}
-                onClick={() => onSelectSubcategory(main, sub, data[main][sub])}
+                onClick={() =>
+                  onSelectSubcategory(
+                    main,
+                    sub,
+                    data[main][sub].map((item, idx) => ({
+                      id: `${sub}-${idx}`,
+                      name: item,
+                    }))
+                  )
+                }
+                style={{ paddingLeft: "15px", cursor: "pointer", margin: "4px 0" }}
               >
                 {sub}
               </div>
