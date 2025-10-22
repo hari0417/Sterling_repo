@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 
 export default function ItemDetail({ item, onSave, category }) {
   const [itemName, setItemName] = useState("");
-  const [manufactureDate, setManufactureDate] = useState("");
   const [manufactureYear, setManufactureYear] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState("");
   const [message, setMessage] = useState("");
 
   const isEditMode = !!item;
@@ -11,51 +12,55 @@ export default function ItemDetail({ item, onSave, category }) {
   useEffect(() => {
     if (item) {
       setItemName(item.name || "");
-      // The date needs to be in YYYY-MM-DD format for the input
-      const formattedDate = item.manufacture_date ? new Date(item.manufacture_date).toISOString().split('T')[0] : "";
-      setManufactureDate(formattedDate);
       setManufactureYear(item.manufacture_year || "");
+      setPreview(item.image_path ? `http://localhost:8000/uploads/${item.image_path}` : "");
     } else {
-      // Reset form when there's no item (for adding)
       setItemName("");
-      setManufactureDate("");
       setManufactureYear("");
+      setPreview("");
+      setImageFile(null);
     }
   }, [item]);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSave = async () => {
-    if (!itemName || !manufactureDate || !manufactureYear) {
+    if (!itemName || !manufactureYear) {
       alert("Please fill all fields before saving!");
       return;
     }
 
-    const itemData = {
-      name: itemName,
-      manufacture_date: manufactureDate,
-      manufacture_year: manufactureYear,
-      category: category, // Add category to the saved data
-    };
+    const formData = new FormData();
+    formData.append("name", itemName);
+    formData.append("manufacture_year", manufactureYear);
+    formData.append("category", category);
+    if (imageFile) formData.append("image", imageFile);
 
     let url = "http://localhost:8000/add_item.php";
     if (isEditMode) {
-      itemData.id = item.id; // Include ID for update
+      formData.append("id", item.id);
       url = "http://localhost:8000/update_item.php";
     }
 
     try {
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(itemData),
+        body: formData,
       });
 
       const data = await response.json();
       if (data.status === "success") {
-        setMessage(`✅ Item ${isEditMode ? 'updated' : 'saved'} successfully!`);
-        onSave({ ...item, ...itemData }); // Notify parent to refresh
+        setMessage(`✅ Item ${isEditMode ? "updated" : "saved"} successfully!`);
+        onSave({ ...item, name: itemName, manufacture_year: manufactureYear, image_path: data.fileName });
         setTimeout(() => setMessage(""), 3000);
       } else {
-        setMessage(`❌ Failed to ${isEditMode ? 'update' : 'save'} item: ${data.message}`);
+        setMessage(`❌ Failed: ${data.message}`);
       }
     } catch (err) {
       console.error("Error:", err);
@@ -90,19 +95,6 @@ export default function ItemDetail({ item, onSave, category }) {
       />
 
       <input
-        type="date"
-        value={manufactureDate}
-        onChange={(e) => setManufactureDate(e.target.value)}
-        style={{
-          padding: "6px",
-          width: "100%",
-          marginBottom: "10px",
-          borderRadius: "4px",
-          border: "1px solid #ccc",
-        }}
-      />
-
-      <input
         type="number"
         placeholder="Manufacture Year"
         value={manufactureYear}
@@ -116,21 +108,34 @@ export default function ItemDetail({ item, onSave, category }) {
         }}
       />
 
-      <div style={{ display: "flex", justifyContent: "flex-start" }}>
-        <button
-          onClick={handleSave}
-          style={{
-            padding: "6px 12px",
-            background: "#10b981",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Save
-        </button>
-      </div>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        style={{ marginBottom: "10px" }}
+      />
+
+      {preview && (
+        <img
+          src={preview}
+          alt="Preview"
+          style={{ width: "100%", borderRadius: "6px", marginBottom: "10px" }}
+        />
+      )}
+
+      <button
+        onClick={handleSave}
+        style={{
+          padding: "6px 12px",
+          background: "#10b981",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Save
+      </button>
 
       {message && (
         <p style={{ marginTop: "15px", fontWeight: "bold", color: "#2563eb" }}>

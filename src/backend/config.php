@@ -1,10 +1,12 @@
 <?php
 // load credentials from environment with fallbacks (updated defaults)
+// load credentials from environment with fallbacks (updated defaults)
 $DB_HOST = getenv('DB_HOST') ?: "localhost";
 $DB_USER = getenv('DB_USER') ?: "root";
-$DB_PASS = getenv('DB_PASS') ?: "qwertyui";
+$DB_PASS = getenv('DB_PASS') ?: "Janu@17";
 $DB_NAME = getenv('DB_NAME') ?: "reactive_shop";
 $DB_PORT = getenv('DB_PORT') ?: 3306;
+// throw exceptions for mysqli errors
 
 // throw exceptions for mysqli errors
 // The mysqli extension must be enabled in php.ini

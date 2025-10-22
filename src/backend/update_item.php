@@ -4,54 +4,36 @@ header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
 include 'config.php';
 
-$data = json_decode(file_get_contents("php://input"), true);
+$id = $_POST['id'] ?? '';
+$name = $_POST['name'] ?? '';
+$manufacture_year = $_POST['manufacture_year'] ?? '';
+$category = $_POST['category'] ?? '';
 
-if (!isset($data['id']) || !isset($data['name']) || !isset($data['manufacture_date']) || !isset($data['manufacture_year'])) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Missing required fields for update"]);
+if (empty($id) || empty($name) || empty($manufacture_year)) {
+    echo json_encode(["status" => "error", "message" => "Missing required fields"]);
     exit;
 }
 
-$id = (int)$data['id'];
-$name = trim($data['name']);
-$manufacture_date = trim($data['manufacture_date']);
-$manufacture_year = trim($data['manufacture_year']);
+$fileName = $_POST['existing_image'] ?? ''; // fallback
+$targetDir = "uploads/";
 
-if ($name === '' || $manufacture_date === '' || $manufacture_year === '') {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Fields cannot be empty"]);
-    exit;
-}
-if (!preg_match('/^\d{4}$/', $manufacture_year)) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Manufacture year must be a 4-digit year"]);
-    exit;
+if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+    $fileTmpPath = $_FILES['image']['tmp_name'];
+    $fileName = time() . '_' . basename($_FILES['image']['name']);
+    move_uploaded_file($fileTmpPath, $targetDir . $fileName);
 }
 
 try {
-    $stmt = $conn->prepare("UPDATE items SET name = ?, manufacture_date = ?, manufacture_year = ? WHERE id = ?");
-    $yearInt = (int)$manufacture_year;
-    $stmt->bind_param("ssii", $name, $manufacture_date, $yearInt, $id);
+    $stmt = $conn->prepare("UPDATE items SET name = ?, manufacture_year = ?, category = ?, image_path = ? WHERE id = ?");
+    $stmt->bind_param("sissi", $name, $manufacture_year, $category, $fileName, $id);
     $stmt->execute();
 
-    if ($stmt->affected_rows > 0) {
-        echo json_encode(["status" => "success", "message" => "Item updated successfully!"]);
-    } else {
-        echo json_encode(["status" => "success", "message" => "No changes were made to the item."]);
-    }
-
+    echo json_encode(["status" => "success", "fileName" => $fileName]);
     $stmt->close();
 } catch (Throwable $e) {
-    http_response_code(500);
-    error_log($e->getMessage()); // Log error
-    echo json_encode(["status" => "error", "message" => "Database error during update"]);
+    echo json_encode(["status" => "error", "message" => "Database error"]);
 }
 
 $conn->close();
